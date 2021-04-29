@@ -63,6 +63,7 @@ public class Powerup : MonoBehaviour
                 break;
         }
         
+        GameObject.Find("Audio_Manager").GetComponent<AudioManager>().PowerUp();
         Destroy(this.gameObject);
     }
 }

@@ -7,10 +7,13 @@ public class Enemy : MonoBehaviour
     private int _speed = 4;
     private int _outOfBounds = -6;
     private Player _player;
+    private Animator _animator;
+    private AudioManager _audioManager;
 
     void Start()
     {
         _player = GameObject.Find("Player").GetComponent<Player>();
+        _animator = this.GetComponent<Animator>();
         MoveToRandomPosition();
     }
 
@@ -45,13 +48,21 @@ public class Enemy : MonoBehaviour
         {
             Player player = other.GetComponent<Player>();
             player.Damage();
-            Destroy(this.gameObject);
+            DestroyEnemy();
         }
         else if (tag == "Laser")
         {
             Destroy(other.gameObject);
             _player.AddScore(10);
-            Destroy(this.gameObject);
+            DestroyEnemy();
         }
+    }
+
+    private void DestroyEnemy()
+    {
+        _speed = 0;
+        _animator.SetTrigger("onEnemyDeath");
+        GameObject.Find("Audio_Manager").GetComponent<AudioManager>().Explosion();
+        Destroy(this.gameObject, 2.5f);
     }
 }

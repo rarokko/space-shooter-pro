@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
@@ -25,6 +26,15 @@ public class Player : MonoBehaviour
     private int _score;
     [SerializeField]
     private UIManager _uiManager;
+    [SerializeField]
+    private GameObject _leftWing;
+    [SerializeField]
+    private GameObject _rightWing;
+    [SerializeField]
+    private AudioSource _laserSound;
+    [SerializeField]
+    private PlayerInput _input;
+    private Vector3 _movementAxis;
 
 
     void Start()
@@ -36,29 +46,39 @@ public class Player : MonoBehaviour
     void Update()
     {
         CalculateMovement();
-        FireLaser();
     }
 
     void FireLaser()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && Time.time > _fireCooldownTimer)
+        if (Time.time > _fireCooldownTimer)
         {
             _fireCooldownTimer = Time.time + _fireRate;
             Vector3 laserPosition = new Vector3(transform.position.x, transform.position.y + 1.0f, 0);
             GameObject laserObject = _tripleShotActive ? _tripleShotPrefab : _laserPrefab;
             Instantiate(laserObject, laserPosition, Quaternion.identity);
+            _laserSound.Play();
         }
+    }
+
+    public void GetAttack(InputAction.CallbackContext value)
+    {
+        if (value.started)
+        {
+            FireLaser();
+        }
+    }
+
+    public void GetInput(InputAction.CallbackContext value)
+    {
+        Vector2 _direction = value.ReadValue<Vector2>();
+        _movementAxis = new Vector3(_direction.x, _direction.y, 0);
     }
 
     
 
     void CalculateMovement()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
-        direction = _speedUpActive ? direction * 2 : direction;
+        Vector3 direction = _speedUpActive ? _movementAxis * 2 : _movementAxis;
         transform.Translate(direction * _speed * Time.deltaTime);
 
         float horizontalPosition = transform.position.x;
@@ -88,8 +108,15 @@ public class Player : MonoBehaviour
 
         _lives--;
 
+        if (_lives == 2) {
+            _leftWing.SetActive(true);
+        } else if (_lives == 1) {
+            _rightWing.SetActive(true);
+        }
+
         if (_lives < 0) {
             _spawnManager.StopSpawning();
+            GameObject.Find("Audio_Manager").GetComponent<AudioManager>().Explosion();
             _uiManager.SetGameOver();
             Destroy(this.gameObject);
         } else {

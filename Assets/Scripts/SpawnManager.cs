@@ -10,18 +10,7 @@ public class SpawnManager : MonoBehaviour
     private Powerup[] _powerups;
     [SerializeField]
     private GameObject _enemyContainer;
-    private bool shouldSpawn = true;
-
-    void Start()
-    {
-        StartCoroutine(SpawnEnemyRoutine());
-        StartCoroutine(SpawnPowerupRoutine());
-    }
-
-    void Update()
-    {
-        
-    }
+    private bool shouldSpawn = false;
 
     IEnumerator SpawnEnemyRoutine()
     {
@@ -41,6 +30,13 @@ public class SpawnManager : MonoBehaviour
             Powerup powerup = Instantiate(_powerups[random], new Vector3(0, 9, 0), Quaternion.identity);
             yield return new WaitForSeconds(Random.Range(3, 7));
         }
+    }
+
+    public void StartSpawning()
+    {
+        shouldSpawn = true;
+        StartCoroutine(SpawnEnemyRoutine());
+        StartCoroutine(SpawnPowerupRoutine());
     }
 
     public void StopSpawning() 
